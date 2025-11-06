@@ -35,7 +35,7 @@ void TRvdump (const char* name, const TreeRoot* root)
     WCONSTSTR
     (
         "digraph Tree {\n"
-        "    graph [outputorder=edgesfirst];\n"
+        "    graph [splines=ortho, outputorder=edgesfirst];\n"
         "    node [shape=plaintext, fontname=\"Arial\"];\n"
         "    edge [fontname=\"Arial\", fontsize=8];\n\n"
     );
@@ -55,9 +55,11 @@ void TRvdump (const char* name, const TreeRoot* root)
                 "    node%p [label=<\n"
                 "        <table border=\"1\" cellborder=\"0\" cellspacing=\"0\" bgcolor=\"" NODECOLOR "\">\n"
                 "           <tr><td port=\"f0\">this  = %p</td></tr>\n"
+                "           <tr><td port=\"f1\">data  = %d</td></tr>\n"
                 "           <tr><td port=\"f2\">left  = ",
                 top,
-                top
+                top,
+                *(int*)top->data
             );
 
             if (top->left == NULL)  { WCONSTSTR ("NULL"); }
@@ -71,8 +73,8 @@ void TRvdump (const char* name, const TreeRoot* root)
             WCONSTSTR ("</td></tr>\n");
             WCONSTSTR ("        </table>>];\n");
 
-            if (top->left)  { WSTR ("    node%p:f2 -> node%p:f0 [color=\"green\", penwidth=1.5];\n", top, top->left); }
-            if (top->right) { WSTR ("    node%p:f3 -> node%p:f0 [color=\"green\", penwidth=1.5];\n", top, top->right); }
+            if (top->left)  { WSTR ("    node%p:w -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->left); }
+            if (top->right) { WSTR ("    node%p:e -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->right); }
             WCONSTSTR ("\n");
 
             if (top->right) stackPush (stack, &top->right);
