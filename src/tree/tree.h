@@ -53,5 +53,7 @@ void      TRdump_ (const char* name, TreeRoot* root, void (*printfunc)(const voi
 #define   TNdump(node)  TNdump_ (       node, NULL, 0, PRE)
 #define   TRdump(root)  TRdump_ (#root, root, NULL,    PRE)
 
+void      TRvdump (const char* name, const TreeRoot* root);
+
 
 #endif

@@ -4,7 +4,7 @@
 
 typedef enum
 {
-    OK,
+    BUFOK,
 
     BUFNULL,
     BUFNOTINITED,

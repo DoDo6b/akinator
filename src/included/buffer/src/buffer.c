@@ -1,6 +1,6 @@
 #include "../buffer.h"
 
-static EC_t BufEC = OK;
+static EC_t BufEC = BUFOK;
 
 Buffer* bufInit (size_t size)
 {
@@ -162,7 +162,10 @@ FILE* bufFOpen (Buffer* buf, const char* fname, const char* mode)
     const char* a = (!w) ? strchr(mode, 'a') : NULL;
     const char* r = strchr(mode, 'r');
 
-    if ((w || a) && r) log_err ("warning", "buffer was opened with 'w' flag [Dual-purpose]");
+    if ((w || a) && r) 
+    {
+        log_war ("warning", "buffer was opened with 'w' flag [Dual-purpose]");
+    }
 
     if (w || a) bufSetStream (buf, fname, stream, BUFWRITE);
     else        bufSetStream (buf, fname, stream, BUFREAD);
@@ -220,7 +223,7 @@ size_t bufRead (Buffer* buf, size_t size)
 
         if (size > buf->size - buf->len)
         {
-            log_err ("warning", "buffer is about to overflow");
+            log_war ("warning", "buffer is about to overflow");
             size = buf->size - buf->len;
         }
     }

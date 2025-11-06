@@ -39,20 +39,19 @@ int main ()
     TNpush (&root, &a, sizeof (a), intCmp);
     a = 7;
     TNpush (&root, &a, sizeof (a), intCmp);
-    a = 20;
-    TNpush (&root, &a, sizeof (a), intCmp);
-
-    TRdumpInt (&root);
-    log_string ("\n\n");
-
     a = 15;
     TNpush (&root, &a, sizeof (a), intCmp);
-
-    TRdumpInt (&root);
-
+    a = 12;
+    TNpush (&root, &a, sizeof (a), intCmp);
     a = 20;
-    TNpop (&root, &a, intCmp);
+    TNpush (&root, &a, sizeof (a), intCmp);
+    a = 8;
+    TNpush (&root, &a, sizeof (a), intCmp);
+    a = 6;
+    TNpush (&root, &a, sizeof (a), intCmp);
+
     TRdumpInt (&root);
+    TRvdump ("dot", &root);
 
     return 0;
 }
