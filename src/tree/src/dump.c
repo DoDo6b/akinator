@@ -30,6 +30,7 @@ void TNdump_ (TreeNode* node, void (*printfunc)(const void*, size_t), size_t ran
     allignDump (rank, "<blu>this ptr: %p <dft>\n", node);
     allignDump (rank, "data ptr:      %p\n",       node->data);
     allignDump (rank, "sizeof (data): %zu\n",      node->size);
+    allignDump (rank, "parent:        %p\n",       node->parent);
     allignDump (rank, "left:          %p\n",       node->left);
     allignDump (rank, "right:         %p\n",       node->right);
 

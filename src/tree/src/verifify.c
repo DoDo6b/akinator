@@ -28,7 +28,7 @@ TSTATUS TRverify (const TreeRoot* root, int (*dataCmp)(const void*, const void*)
     {
         if (stackLen (stack) > 0) stackPop (stack, &top);
 
-        while (top)
+        for (size_t i = 0; i < root->size + 1 && top; i++)
         {
             TERRNO |= TNverify (top);
             realSiz++;

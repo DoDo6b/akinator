@@ -54,18 +54,23 @@ void TRvdump (const char* name, const TreeRoot* root)
             (
                 "    node%p [label=<\n"
                 "        <table border=\"1\" cellborder=\"0\" cellspacing=\"0\" bgcolor=\"" NODECOLOR "\">\n"
-                "           <tr><td port=\"f0\">this  = %p</td></tr>\n"
-                "           <tr><td port=\"f1\">data  = %d</td></tr>\n"
-                "           <tr><td port=\"f2\">left  = ",
+                "           <tr><td port=\"f0\">this   = %p</td></tr>\n"
+                "           <tr><td port=\"f1\">data   = %d</td></tr>\n"
+                "           <tr><td port=\"f2\">parent = ",
                 top,
                 top,
                 *(int*)top->data
             );
 
+            if (top->parent == NULL)  { WCONSTSTR ("NULL"); }
+            else                    { WSTR ("%p", top->parent); }
+
+            WCONSTSTR ("</td></tr>\n           <tr><td port=\"f3\">left   = ");
+
             if (top->left == NULL)  { WCONSTSTR ("NULL"); }
             else                    { WSTR ("%p", top->left); }
 
-            WCONSTSTR ("</td></tr>\n           <tr><td port=\"f3\">right = ");
+            WCONSTSTR ("</td></tr>\n           <tr><td port=\"f4\">right  = ");
 
             if (top->right == NULL) { WCONSTSTR ("NULL"); }
             else                    { WSTR ("%p", top->right); }
@@ -73,8 +78,9 @@ void TRvdump (const char* name, const TreeRoot* root)
             WCONSTSTR ("</td></tr>\n");
             WCONSTSTR ("        </table>>];\n");
 
-            if (top->left)  { WSTR ("    node%p:w -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->left); }
-            if (top->right) { WSTR ("    node%p:e -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->right); }
+            if (top->parent) { WSTR ("    node%p:n -> node%p:s [color=\"green\", penwidth=1.5];\n", top, top->parent); }
+            if (top->left)   { WSTR ("    node%p:w -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->left); }
+            if (top->right)  { WSTR ("    node%p:e -> node%p:n [color=\"green\", penwidth=1.5];\n", top, top->right); }
             WCONSTSTR ("\n");
 
             if (top->right) stackPush (stack, &top->right);

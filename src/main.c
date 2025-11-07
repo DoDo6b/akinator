@@ -25,33 +25,34 @@ int main ()
 {
     log_start ("stdout");
 
-    TreeRoot root = {
-        .root = NULL,
-        .size = 0,
-        .depth = 0,
-    };
+    TreeRoot* root = TRinit ();
 
     int a = 10;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 5;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 3;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 7;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 15;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 12;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 20;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 8;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
     a = 6;
-    TNpush (&root, &a, sizeof (a), intCmp);
+    TNpush (root, &a, sizeof (a), intCmp);
 
-    TRdumpInt (&root);
-    TRvdump ("dot", &root);
+    a = 10;
+    TNpop (root, TNsearch (root, &a, intCmp), intCmp);
+
+    TRdumpInt (root);
+    TRvdump ("dot", root);
+
+    TRdel (root);
 
     return 0;
 }
