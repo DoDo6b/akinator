@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "../logger/logger.h"
 #include "../kassert/kassert.h"
@@ -60,11 +61,11 @@ FILE* bufFOpen   (Buffer* buf, const char* fname,              const char* mode)
 
 size_t bufRead  (Buffer* buf, size_t size);
 size_t bufLSplit(Buffer* buf);
-size_t bufWrite (Buffer* buf, const void* src, size_t size); 
+size_t bufWrite (Buffer* buf, const void* src, size_t size);
+size_t bufWStr  (Buffer* buf, const char* format, ...);
 size_t bufFlush (Buffer* buf);
 
 size_t bufScanf    (Buffer* buf, const char* format, void* dst);
-long   bufNLine    (Buffer* buf);
 char   bufGetc     (Buffer* buf);
 char   bufpeekc    (Buffer* buf);
 

@@ -1,5 +1,9 @@
 trr
 
+# TODO
+TODO
+TODO.md
+
 # MetaDirs
 .vscode
 .DS_Store
@@ -10,6 +14,8 @@ build
 *.html
 *.log
 *.txt
+*.dot
+dump.png
 
 # Prerequisites
 *.d
