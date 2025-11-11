@@ -1,4 +1,5 @@
 #include "akinator.h"
+#include "locale.h"
 
 
 ASTATUS AERRNO = OK;
@@ -7,6 +8,8 @@ static ASTATUS addNewCh (TreeNode* parent);
 
 ASTATUS play (TreeRoot* dbroot)
 {
+    setlocale(LC_ALL, "");
+
     if (dbroot == NULL)
     {
         AERRNO |= NULLRECIVED;
@@ -18,22 +21,22 @@ ASTATUS play (TreeRoot* dbroot)
     {
         printf ("%s?\n", (const char*)questionNode->data);
 
-        char          userans = 0;
-        scanf ("%c", &userans);
+        wchar_t       userans = 0;
+        scanf ("%lc", &userans);
         
-        while (userans != 'y' && userans != 'n')
+        while (userans != L'д' && userans != L'н')
         {
-            printf ("allowed answer: y/n\n");
-            scanf ("%c", &userans);
+            printf ("разрешенные ответы: д/н\n");
+            scanf ("%lc", &userans);
         }
 
-        parent                 = questionNode;
-        if      (userans == 'y') questionNode = questionNode->right;
-        else                     questionNode = questionNode->left;
+        parent                  = questionNode;
+        if      (userans == L'д') questionNode = questionNode->right;
+        else                      questionNode = questionNode->left;
 
         if (questionNode == NULL)
         {
-            if (userans == 'y') printf ("GGs\n");
+            if (userans == L'д') printf ("GGs\n");
             else
             {
                 addNewCh (parent);
@@ -67,10 +70,21 @@ static ASTATUS addNewCh (TreeNode* parent)
     }
     parent->left->parent = parent;
 
+    size_t bufSiz = BUFSIZ;
+    char* buf = (char*)calloc (bufSiz, sizeof (char));
+    if (buf == NULL)
+    {
+        AERRNO |= BADALLOC;
+        log_err ("allocation error", "something went wrong while allocating buffer");
+        return AERRNO;
+    }
 
-    char buf[BUFSIZ] = {};
-    printf ("Who is it?\n");
-    scanf ("%s", buf);
+    int     c = 0;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+
+    printf ("Кто это?\n");
+    getline (&buf, &bufSiz, stdin);
+    buf[strcspn(buf, "\n")] = '\0';
 
     parent->right = TNinit (buf, strlen (buf) + 1);
     if (parent->right == NULL)
@@ -82,8 +96,10 @@ static ASTATUS addNewCh (TreeNode* parent)
     parent->right->parent = parent;
 
 
-    printf ("How is he different from %s? He ...\n", (const char*)parent->data);
-    scanf ("%s", buf);
+    printf ("Чем оно/он/она отличается от %s? Продолжите: Он/оно/она ...\n", (const char*)parent->data);
+    getline (&buf, &bufSiz, stdin);
+    buf[strcspn(buf, "\n")] = '\0';
+
     size_t bufLen = strlen (buf) + 1;
 
     if (parent->size < bufLen)
@@ -98,6 +114,8 @@ static ASTATUS addNewCh (TreeNode* parent)
     }
     memcpy (parent->data, buf, bufLen);
     parent->size = bufLen;
+
+    free (buf);
 
     return AERRNO;
 }
