@@ -1,55 +1,23 @@
 #include "included/logger/logger.h"
 #include "tree/tree.h"
+#include "akinator/akinator.h"
 
-
-static int intCmp (const void* a, const void* b)
+static void printStr (const void* src, size_t size)
 {
-    if      (*(const int*)a > *(const int*)b) return 1;
-    else if (*(const int*)a < *(const int*)b) return -1;
-    else                                      return 0;
+    log_string ("data:          %s\n", (const char*)src);
 }
-
-static void printInt (const void* src, size_t size)
-{
-    if (sizeof (int) != size)
-    {
-        log_err ("type error", "value type isnt int");
-        return;
-    }
-    log_string ("data:          %d\n", *(const int*)src);
-}
-#define TNdumpInt(node)  TNdump_ (       node, printInt, 0, PRE)
-#define TRdumpInt(root)  TRdump_ (#root, root, printInt,    PRE)
+#define TNdumpStr(node)  TNdump_ (       node, printStr, 0, PRE)
+#define TRdumpStr(root)  TRdump_ (#root, root, printStr,    PRE)
 
 int main ()
 {
     log_start ("stdout");
 
-    TreeRoot* root = TRinit ();
+    TreeRoot* root = TRloadf ("save.txt");
 
-    int a = 10;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 5;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 3;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 7;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 15;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 12;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 20;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 8;
-    TNpush (root, &a, sizeof (a), intCmp);
-    a = 6;
-    TNpush (root, &a, sizeof (a), intCmp);
+    play (root);
 
-    a = 10;
-    TNpop (root, TNsearch (root, &a, intCmp), intCmp);
-
-    TRdumpInt (root);
+    TRdumpStr (root);
     TRvdump   ("graph.dot", root);
     TRsavetof (root, "save.txt");
 
