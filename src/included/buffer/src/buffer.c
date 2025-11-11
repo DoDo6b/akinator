@@ -211,7 +211,7 @@ size_t bufFlush (Buffer* buf)
 size_t bufRead (Buffer* buf, size_t size)
 {
     assertStrict (bufVerify (buf, 0) == 0, "failed buffer verification");
-    assertStrict (buf->mode == BUFREAD, "incompatible buffer mode");
+    assertStrict (buf->mode == BUFREAD,    "incompatible buffer mode");
 
     if (size != 0)
     {
@@ -254,7 +254,7 @@ size_t bufLSplit (Buffer* buf)
 size_t bufWrite (Buffer* buf, const void* src, size_t size)
 {
     assertStrict (bufVerify (buf, 0) == 0, "failed buffer verification");
-    assertStrict (buf->mode == BUFWRITE, "incompatible buffer mode");
+    assertStrict (buf->mode == BUFWRITE,   "incompatible buffer mode");
 
     if (buf->bufpos + size > buf->buffer + buf->size) if (bufFlush (buf) == 0) return 0;
 
@@ -265,11 +265,32 @@ size_t bufWrite (Buffer* buf, const void* src, size_t size)
     return size;
 }
 
+size_t bufWStr (Buffer* buf, const char* format, ...)
+{
+    assertStrict (bufVerify (buf, 0) == 0, "failed buffer verification");
+    assertStrict (buf->mode == BUFWRITE,   "incompatible buffer mode");
+    assertStrict (format,                  "received NULL");
+
+    va_list args;
+    va_start (args, format);
+
+    char str[BSIZ] = "";
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    vsprintf (str, format, args);
+#pragma GCC diagnostic pop
+
+    va_end (args);
+
+    return bufWrite (buf, str, strlen (str));
+}
+
 
 size_t bufScanf (Buffer* buf, const char* format, void* dst)
 {
     assertStrict (bufVerify (buf, 0) == 0, "failed buffer verification");
-    assertStrict (buf->mode == BUFREAD, "incompatible buffer mode");
+    assertStrict (buf->mode == BUFREAD,    "incompatible buffer mode");
 
     size_t  oldFormatL = strlen (format);
     char*   newFormat = (char*)calloc (oldFormatL + sizeof ("%n\0"), sizeof (char));
@@ -295,27 +316,6 @@ size_t bufScanf (Buffer* buf, const char* format, void* dst)
     return read;
 }
 
-long bufNLine (Buffer* buf)
-{
-    assertStrict (bufVerify (buf, 0) == 0, "failed buffer verification");
-    assertStrict (buf->mode == BUFREAD, "incompatible buffer mode");
-
-    char* nextline = strchr (buf->bufpos, '\0') + 1;
-
-    if (nextline > buf->buffer + buf->len) return -1;
-    long skipped = (long)(nextline - buf->bufpos);
-    buf->bufpos = nextline;
-    return skipped;
-}
-
-
-void bufSSpaces (Buffer* buf)
-{
-    assertStrict (bufVerify (buf, 0) == 0, "buffer failed verification");
-    assertStrict (buf->mode == BUFREAD, "incompatible buffer mode");
-
-    while (*buf->bufpos == ' ' && buf->bufpos < buf->buffer + buf->size) buf->bufpos++;
-}
 
 char bufGetc (Buffer* buf)
 {
@@ -332,6 +332,7 @@ char bufpeekc (Buffer* buf)
 
     return *buf->bufpos;
 }
+
 
 long long bufSeek (Buffer* buf, long offset, char base)
 {
@@ -383,10 +384,11 @@ long bufTellL (const Buffer* buf)
     return line;
 }
 
+
 void bufCpy (Buffer* buf, void* dst, size_t size)
 {
     assertStrict (bufVerify (buf, 0) == 0, "buffer failed verification");
-    assertStrict (dst, "received NULL");
+    assertStrict (dst,                     "received NULL");
 
     if (buf->bufpos + size < buf->buffer + buf->size)
     {

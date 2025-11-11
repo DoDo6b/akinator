@@ -55,11 +55,11 @@ void TRvdump (const char* name, const TreeRoot* root)
                 "    node%p [label=<\n"
                 "        <table border=\"1\" cellborder=\"0\" cellspacing=\"0\" bgcolor=\"" NODECOLOR "\">\n"
                 "           <tr><td port=\"f0\">this   = %p</td></tr>\n"
-                "           <tr><td port=\"f1\">data   = %d</td></tr>\n"
+                "           <tr><td port=\"f1\">data   = " RAWPRINTFSPEC "</td></tr>\n"
                 "           <tr><td port=\"f2\">parent = ",
                 top,
                 top,
-                *(int*)top->data
+                (CastTo_t)top->data
             );
 
             if (top->parent == NULL)  { WCONSTSTR ("NULL"); }

@@ -50,7 +50,8 @@ int main ()
     TNpop (root, TNsearch (root, &a, intCmp), intCmp);
 
     TRdumpInt (root);
-    TRvdump ("dot", root);
+    TRvdump   ("graph.dot", root);
+    TRsavetof (root, "save.txt");
 
     TRdel (root);
 
