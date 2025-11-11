@@ -10,7 +10,8 @@
 
 #define SECURE
 
-#define RAWPRINTFSPEC "%d"
+#define RAWPRINTFSPEC "%s"
+typedef char* CastTo_t;
 
 typedef struct TreeNode_s
 {
@@ -64,7 +65,8 @@ void      TRdump_ (const char* name, TreeRoot* root, void (*printfunc)(const voi
 
 void      TRvdump (const char* name, const TreeRoot* root);
 
-void TRsavetof (const TreeRoot* root, const char* filename);
+void      TRsavetof (const TreeRoot* root, const char* filename);
+TreeRoot* TRloadf   (                      const char* filename);
 
 
 #endif

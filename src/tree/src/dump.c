@@ -72,5 +72,5 @@ void TRdump_ (const char* name, TreeRoot* root, void (*printfunc)(const void*, s
         root->root
     );
 
-    TNdump_ (root->root, printfunc, 0, order);
+    if (root->root) TNdump_ (root->root, printfunc, 0, order);
 }
