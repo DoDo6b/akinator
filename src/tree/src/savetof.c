@@ -29,8 +29,8 @@ void TRsavetof (const TreeRoot* root, const char* filename)
 
     TNsavetof (root->root, bufW);
 
-    bufFree (bufW);
     fclose (stream);
+    bufFree (bufW);
 
     log_string ("<grn>Tree saved to file: %s<dft>\n", filename);
 }
@@ -49,16 +49,12 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
         return NULL;
     }
 
-    char* stop = strchr (bufR->bufpos, '{');
-    size_t len = (size_t)(stop - bufR->bufpos) + 1;
-    if (stop == NULL || len == 1) return NULL;
+    char*      stop = strchr (bufR->bufpos, '{');
+    long len = stop - bufR->bufpos;
+    if (stop == NULL || len == 0) return NULL;
 
-    char* buffer = (char*)calloc (len, sizeof (char));
-    bufScanf (bufR, "%[^{]", buffer);
-    buffer[len - 1] = '\0';
-
-    TreeNode* node = TNinit (buffer, len);
-    free (buffer);
+    TreeNode* node = TNinit (bufR->bufpos, (size_t)len);
+    bufSeek (bufR, len, SEEK_CUR);
 
     node->left  = TNloadf (bufR, counter);
     node->right = TNloadf (bufR, counter);
@@ -91,6 +87,9 @@ TreeRoot* TRloadf (const char* filename)
 
     root->root = TNloadf (bufR, &root->size);
     root->size++;
+
+    fclose (bufR->stream);
+    bufFree (bufR);
 
     return root;
 }

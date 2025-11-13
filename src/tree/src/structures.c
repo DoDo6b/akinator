@@ -14,7 +14,7 @@ TreeNode* TNinit (const void* src, size_t size)
         return NULL;
     }
 
-        node->data = calloc (size, sizeof (char));
+        node->data = calloc (size + 1, sizeof (char));
     if (node->data == NULL)
     {
         TERRNO |= BADALLOC;
@@ -24,6 +24,7 @@ TreeNode* TNinit (const void* src, size_t size)
     }
     node->size = size;
     memcpy (node->data, src, size);
+    *((char*)(node->data) + size) = 0;
 
     return node;
 }
