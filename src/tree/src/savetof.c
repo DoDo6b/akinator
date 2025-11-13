@@ -40,8 +40,7 @@ void TRsavetof (const TreeRoot* root, const char* filename)
 static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
 {
     assertStrict (bufVerify (bufR, 0) == 0 && bufR->mode == BUFREAD, "buffer failed verification");
-
-    printf ("c: %c, buffer: %s\n", bufpeekc (bufR), bufR->bufpos);
+    
 
     if (bufpeekc (bufR) == '{') bufSeek (bufR, 1, SEEK_CUR);
     if (bufpeekc (bufR) == '}')
