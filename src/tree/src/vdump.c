@@ -1,7 +1,7 @@
-#include "../tree.h"
 #include "../../included/kassert/kassert.h"
 #include "../../included/stack/stack.h"
 #include "../../included/buffer/buffer.h"
+#include "../tree.h"
 
 #define BSIZ BUFSIZ
 

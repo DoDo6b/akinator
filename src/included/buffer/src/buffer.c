@@ -164,7 +164,7 @@ FILE* bufFOpen (Buffer* buf, const char* fname, const char* mode)
 
     if ((w || a) && r) 
     {
-        log_war ("warning", "buffer was opened with 'w' flag [Dual-purpose]");
+        log_war ("warning", "buffer was opened with 'rw(a)(+)' flag [Dual-purpose]");
     }
 
     if (w || a) bufSetStream (buf, fname, stream, BUFWRITE);

@@ -17,6 +17,8 @@ static void allignRank (int (*printFunc)(const char*, ...), size_t rank)
 
 void TNdump_ (TreeNode* node, void (*printfunc)(const void*, size_t), size_t rank, DUMPORDER order)
 {
+    assert (printfunc);
+
     if (node == NULL)
     {
         TERRNO |= NULLRECIVED;
@@ -52,6 +54,8 @@ void TNdump_ (TreeNode* node, void (*printfunc)(const void*, size_t), size_t ran
 
 void TRdump_ (const char* name, TreeRoot* root, void (*printfunc)(const void*, size_t), DUMPORDER order)
 {
+    assert (printfunc);
+
     if (root == NULL)
     {
         TERRNO |= NULLRECIVED;

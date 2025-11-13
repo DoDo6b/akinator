@@ -11,6 +11,7 @@ static void TNsavetof (const TreeNode* node, Buffer* bufW)
         log_err ("badarg error", "received NULL");
         return;
     }
+    assertStrict (bufVerify (bufW, 0) == BUFOK, "buffer failed verification");
 
     bufWStr (bufW, RAWPRINTFSPEC, (CastTo_t)node->data);
 
@@ -24,6 +25,9 @@ static void TNsavetof (const TreeNode* node, Buffer* bufW)
 
 void TRsavetof (const TreeRoot* root, const char* filename)
 {
+    assertStrict (TRverify (root, NULL) == OK, "root failed verification");
+    assertStrict (filename, "received NULL");
+
     Buffer* bufW = bufInit (BSIZ);
     FILE* stream = bufFOpen (bufW, filename, "w+");
 
@@ -39,7 +43,8 @@ void TRsavetof (const TreeRoot* root, const char* filename)
 
 static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
 {
-    assertStrict (bufVerify (bufR, 0) == 0 && bufR->mode == BUFREAD, "buffer failed verification");
+    assertStrict (counter, "received NULL");
+    assertStrict (bufVerify (bufR, 0) == BUFOK && bufR->mode == BUFREAD, "buffer failed verification");
     
 
     if (bufpeekc (bufR) == '{') bufSeek (bufR, 1, SEEK_CUR);
@@ -72,6 +77,8 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
 
     if (bufpeekc (bufR) == '}') bufSeek (bufR, 1, SEEK_CUR);
 
+    assertStrict (TNverify (node) == 0, "node failed verification");
+
     return node;
 }
 
@@ -90,6 +97,8 @@ TreeRoot* TRloadf (const char* filename)
 
     fclose (bufR->stream);
     bufFree (bufR);
+
+    assertStrict (TRverify (root, NULL), "tree failed verification");
 
     return root;
 }

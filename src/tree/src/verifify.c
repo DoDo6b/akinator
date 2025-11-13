@@ -1,5 +1,6 @@
-#include "../tree.h"
+#include "../../included/kassert/kassert.h"
 #include "../../included/stack/stack.h"
+#include "../tree.h"
 
 TSTATUS TNverify (const TreeNode* node)
 {
@@ -20,6 +21,12 @@ TSTATUS TNverify (const TreeNode* node)
 }
 TSTATUS TRverify (const TreeRoot* root, int (*dataCmp)(const void*, const void*))
 {
+    if (root == NULL)
+    {
+        TERRNO |= NULLRECIVED;
+        log_err ("verification error", "root failed verification");
+    }
+
     size_t realSiz   = 0;
 
     StackHandler stack = stackInit (root->size + 1, sizeof (TreeNode*));
@@ -32,12 +39,12 @@ TSTATUS TRverify (const TreeRoot* root, int (*dataCmp)(const void*, const void*)
         {
             TERRNO |= TNverify (top);
             realSiz++;
-            if (top->left && dataCmp (top->left->data, top->data) >= 0)
+            if (dataCmp && top->left && dataCmp (top->left->data, top->data) >= 0)
             {
                 TERRNO |= UNSORTED;
                 log_err ("verification error", "tree is unsorted (lchild) %zu", realSiz);
             }
-            if (top->right && dataCmp (top->right->data, top->data) <= 0)
+            if (dataCmp && top->right && dataCmp (top->right->data, top->data) <= 0)
             {
                 TERRNO |= UNSORTED;
                 log_err ("verification error", "tree is unsorted (rchild)");

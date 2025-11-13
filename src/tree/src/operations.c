@@ -10,6 +10,7 @@ TreeNode* TNpush (TreeRoot* root, const void* src, size_t size, int (*dataCmp)(c
         log_err ("badarg error", "received NULL");
         return NULL;
     }
+    assert (dataCmp);
 
     if (root->root == NULL)
     {
@@ -55,6 +56,9 @@ TreeNode* TNpush (TreeRoot* root, const void* src, size_t size, int (*dataCmp)(c
             }
 
             root->size++;
+
+            assert (TRverify (root, dataCmp) == OK);
+
             return *insPlace;
         }
     }
@@ -72,6 +76,7 @@ TreeNode* TNsearch (const TreeRoot* root, void* src, int (*dataCmp)(const void*,
         log_err ("badarg error", "received NULL");
         return NULL;
     }
+    assert (dataCmp);
 
     for (TreeNode* i = root->root; i;)
     {
@@ -89,6 +94,7 @@ void TNpop (TreeRoot* root, TreeNode* target, int (*dataCmp)(const void*, const 
 {
     assert (TRverify (root, dataCmp) == OK);
     assert (TNverify (target)        == OK);
+    assert (dataCmp);
 
     free (target->data);
     target->size = 0;
@@ -136,6 +142,9 @@ void TNpop (TreeRoot* root, TreeNode* target, int (*dataCmp)(const void*, const 
 
     
     root->size--;
+
+    assert (TRverify (root, dataCmp) == OK);
+
     return;
 
     log_err ("warning", "element wasnt found");

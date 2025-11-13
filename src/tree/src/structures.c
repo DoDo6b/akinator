@@ -6,6 +6,8 @@ TSTATUS TERRNO = OK;
 
 TreeNode* TNinit (const void* src, size_t size)
 {
+    assert (src);
+
     TreeNode* node = (TreeNode*)calloc (1, sizeof (TreeNode));
     if       (node == NULL)
     {
@@ -25,6 +27,8 @@ TreeNode* TNinit (const void* src, size_t size)
     node->size = size;
     memcpy (node->data, src, size);
     *((char*)(node->data) + size) = 0;
+
+    assert (TNverify (node) == OK);
 
     return node;
 }
