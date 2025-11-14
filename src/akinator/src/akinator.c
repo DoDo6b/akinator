@@ -1,23 +1,23 @@
-#include "akinator.h"
 #include "locale.h"
+#include "hashTree/hashTree.h"
+#include "../akinator.h"
 
 
-ASTATUS AERRNO = OK;
+ASTATUS AERRNO = AOK;
 
-static ASTATUS addNewCh (TreeNode* parent);
+static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree);
 
-ASTATUS play (TreeRoot* dbroot)
+ASTATUS play (HashTR* hashTree)
 {
     setlocale(LC_ALL, "");
 
-    if (dbroot == NULL)
+    if (TRverify (hashTree->original, NULL))
     {
-        AERRNO |= NULLRECIVED;
-        log_err ("verification error", "received NULL");
+        log_err ("verification error", "data base failed verification");
         return AERRNO;
     }
 
-    for (TreeNode* questionNode = dbroot->root, *parent = NULL; questionNode;)
+    for (TreeNode* questionNode = hashTree->original->root, *parent = NULL; questionNode;)
     {
         printf ("%s?\n", (const char*)questionNode->data);
 
@@ -39,18 +39,18 @@ ASTATUS play (TreeRoot* dbroot)
             if (userans == L'д') printf ("GGs\n");
             else
             {
-                addNewCh (parent);
+                addNewCh (parent, hashTree);
                 if (AERRNO != OK) return AERRNO;
-                dbroot->size++;
             }
-            
+
             return AERRNO;
         }
     }
 
-    if (dbroot->root == NULL)
+
+    if (hashTree->original->root == NULL)
     {
-        dbroot->root = TNinit ("unknown", sizeof ("unknown"));
+        hashTree->original->root = TNinit ("unknown", sizeof ("unknown"));
         return AERRNO;
     }
 
@@ -59,7 +59,7 @@ ASTATUS play (TreeRoot* dbroot)
 }
 
 
-static ASTATUS addNewCh (TreeNode* parent)
+static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
 {
     parent->left = TNinit (parent->data, parent->size);
     if (parent->left == NULL)
@@ -69,6 +69,8 @@ static ASTATUS addNewCh (TreeNode* parent)
         return AERRNO;
     }
     parent->left->parent = parent;
+    hashTree->original->size++;
+    HTNsearch (hashTree, djb2Hash ((const char*)parent->data, parent->size))->node = parent->left;
 
     size_t bufSiz = BUFSIZ;
     char* buf = (char*)calloc (bufSiz, sizeof (char));
@@ -94,6 +96,8 @@ static ASTATUS addNewCh (TreeNode* parent)
         return AERRNO;
     }
     parent->right->parent = parent;
+    hashTree->original->size++;
+    HTNpush (hashTree, parent->right);
 
 
     printf ("Чем оно/он/она отличается от %s? Продолжите: Он/оно/она ...\n", (const char*)parent->data);
@@ -118,4 +122,52 @@ static ASTATUS addNewCh (TreeNode* parent)
     free (buf);
 
     return AERRNO;
+}
+
+
+void printChDescr (HashTR* hashTree, const char* character)
+{
+    assertStrict (HTRverify (hashTree) == OK, "hash tree failed verification");
+
+    HashTNode* hashNode = HTNsearch (hashTree, djb2Hash (character, strlen (character)));
+    if (hashNode == NULL)
+    {
+        printf ("Object not founded\n");
+        TRdump_ ("hash tree", hashTree->tree, printHN, PRE);
+        return;
+    }
+
+    const TreeNode* node = (const TreeNode*)(hashNode->node);
+    if (node == NULL)
+    {
+        AERRNO |= NULLRECIVED;
+        log_err ("error", "original node is NULL");
+        return;
+    }
+
+
+    StackHandler stack = stackInit (hashTree->original->size * 3, sizeof (const char*));
+    for (const TreeNode* i = node; i->parent != NULL; i = i->parent)
+    {
+        const char* buf = "v";
+        stackPush (stack, &buf);
+
+        buf = (i->parent == NULL || i->parent->right == i) ? "Да" : "Нет";
+        stackPush (stack, &buf);
+
+        buf = "|";
+        stackPush (stack, &buf);
+        
+        stackPush (stack, &i->parent->data);
+    }
+    while (stackLen (stack) > 0)
+    {
+        const char* str = NULL;
+        stackPop (stack, &str);
+        printf ("%s\n", str);
+    }
+
+    stackFree (stack);
+
+    printf ("%s\n", (const char*)node->data);
 }

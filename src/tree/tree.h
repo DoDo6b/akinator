@@ -31,8 +31,6 @@ typedef struct
     size_t depth;
 }TreeRoot;
 
-typedef TreeRoot HashTR;
-
 typedef uint32_t TSTATUS;
 extern TSTATUS TERRNO;
 

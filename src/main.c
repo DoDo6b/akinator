@@ -2,25 +2,61 @@
 #include "tree/tree.h"
 #include "akinator/akinator.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 static void printStr (const void* src, size_t size)
 {
     log_string ("data:          %s\n", (const char*)src);
 }
+#pragma GCC diagnostic pop
+
 #define TNdumpStr(node)  TNdump_ (       node, printStr, 0, PRE)
 #define TRdumpStr(root)  TRdump_ (#root, root, printStr,    PRE)
 
-int main ()
+int main (int argc, char** argv)
 {
     log_start ("stdout");
 
-    TreeRoot* root = TRloadf ("save.txt");
+    TreeRoot* root = NULL;
 
-    play (root);
+    if (argc >= 3 && strcmp (argv[1], "-s") == 0) root = TRloadf (argv[2]);
+    else
+    {
+        printf ("usage: %s -s *save filename* ...\n", argv[0]);
+        return 1;
+    }
 
     TRdumpStr (root);
-    TRvdump   ("graph.dot", root);
-    TRsavetof (root, "save.txt");
 
+    HashTR* hashTree = hashTR (root);
+
+    if (argc >= 4)
+    {
+        for (int arg = 3; arg < argc; arg++)
+        {
+            if (strcmp (argv[arg], "-p") == 0) play (hashTree);
+            else if (strcmp (argv[arg], "-d") == 0) 
+            {
+                char chname[BUFSIZ] = {0};
+                printf ("type name: ");
+                scanf ("%s", chname);
+                printf ("\n");
+
+                printChDescr (hashTree, chname);
+            }
+            else
+            {
+                printf ("unknown flag\n");
+                break;
+            }
+        }
+    }
+
+    HTRdel (hashTree);
+
+    TRvdump   ("graph.dot", root);
+
+    TRsavetof (root, argv[2]);
     TRdel (root);
 
     return 0;

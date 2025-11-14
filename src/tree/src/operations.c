@@ -15,13 +15,13 @@ TreeNode* TNpush (TreeRoot* root, const void* src, size_t size, int (*dataCmp)(c
     if (root->root == NULL)
     {
         root->root = TNinit (src, size);
-            if (TERRNO)
-            {
-                log_err ("runtime error", "cant init next tree node");
-            }
+        if (TERRNO)
+        {
+            log_err ("runtime error", "cant init next tree node");
+        }
 
-            root->size++;
-            return root->root;
+               root->size++;
+        return root->root;
     }
 
     for (TreeNode* i = root->root, **insPlace = NULL; i != NULL;)
@@ -42,18 +42,18 @@ TreeNode* TNpush (TreeRoot* root, const void* src, size_t size, int (*dataCmp)(c
         else
         {
             TERRNO |= DUPLSYMB;
-            log_err ("warning", "duplicate symbol");
+            log_err ("warning", "duplicate symbol with %p", i);
             return i;
         }
 
         if (i == NULL)
         {
-            *insPlace = TNinit (src, size);
-            (*insPlace)->parent = parent;
-            if (TERRNO)
+             *insPlace = TNinit (src, size);
+            if (TERRNO || *insPlace == NULL)
             {
                 log_err ("runtime error", "cant init next tree node");
             }
+            (*insPlace)->parent = parent;
 
             root->size++;
 

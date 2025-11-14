@@ -77,7 +77,7 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
 
     if (bufpeekc (bufR) == '}') bufSeek (bufR, 1, SEEK_CUR);
 
-    assertStrict (TNverify (node) == 0, "node failed verification");
+    assertStrict (TNverify (node) == OK, "node failed verification");
 
     return node;
 }
@@ -93,12 +93,12 @@ TreeRoot* TRloadf (const char* filename)
     TreeRoot* root = TRinit ();
 
     root->root = TNloadf (bufR, &root->size);
-    root->size++;
+    if (root->root) root->size++;
 
     fclose (bufR->stream);
     bufFree (bufR);
 
-    assertStrict (TRverify (root, NULL), "tree failed verification");
+    assertStrict (TRverify (root, NULL) == OK, "tree failed verification");
 
     return root;
 }

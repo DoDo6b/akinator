@@ -58,7 +58,7 @@ TSTATUS TRverify (const TreeRoot* root, int (*dataCmp)(const void*, const void*)
     if (root->size != realSiz)
     {
         TERRNO |= ROOTSTATCOR;
-        log_err ("verification error", "tree sizes differ");
+        log_err ("verification error", "tree sizes differ: %zu(root->size) != %zu(realSize)", root->size, realSiz);
     }
     return TERRNO;
 }
