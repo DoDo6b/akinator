@@ -25,24 +25,43 @@ int main (int argc, char** argv)
         printf ("usage: %s -s *save filename* ...\n", argv[0]);
         return 1;
     }
-
     TRdumpStr (root);
 
     HashTR* hashTree = hashTR (root);
 
+    bool DIRTY = 0;
     if (argc >= 4)
     {
         for (int arg = 3; arg < argc; arg++)
         {
-            if (strcmp (argv[arg], "-p") == 0) play (hashTree);
+            if (strcmp (argv[arg], "-p") == 0)
+            {
+                play (hashTree);
+                
+                DIRTY = true;
+            }
             else if (strcmp (argv[arg], "-d") == 0) 
             {
                 char chname[BUFSIZ] = {0};
                 printf ("type name: ");
-                scanf ("%s", chname);
+                gets (chname);
                 printf ("\n");
 
                 printChDescr (hashTree, chname);
+            }
+            else if (strcmp (argv[arg], "-c") == 0)
+            {
+                char chA[BUFSIZ] = {0};
+                printf ("type first name: ");
+                gets (chA);
+
+                char chB[BUFSIZ] = {0};
+                printf ("\ntype second name: ");
+                gets (chB);
+
+                printf ("\n");
+
+                cmpCh (hashTree, chA, chB);
             }
             else
             {
@@ -56,7 +75,8 @@ int main (int argc, char** argv)
 
     TRvdump   ("graph.dot", root);
 
-    TRsavetof (root, argv[2]);
+    if (DIRTY) TRsavetof (root, argv[2]);
+
     TRdel (root);
 
     return 0;

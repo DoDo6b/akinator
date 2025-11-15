@@ -125,49 +125,115 @@ static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
 }
 
 
-void printChDescr (HashTR* hashTree, const char* character)
+
+static TreeNode* searchHNtoTN (const HashTR* hashTree, const char* character)
 {
-    assertStrict (HTRverify (hashTree) == OK, "hash tree failed verification");
+    assertStrict (TRverify (hashTree->tree, hashCMP)  == OK, "hash tree failed verification");
 
     HashTNode* hashNode = HTNsearch (hashTree, djb2Hash (character, strlen (character)));
     if (hashNode == NULL)
     {
         printf ("Object not founded\n");
         TRdump_ ("hash tree", hashTree->tree, printHN, PRE);
-        return;
+        return NULL;
     }
 
-    const TreeNode* node = (const TreeNode*)(hashNode->node);
+    if (hashNode->node == NULL)
+    {
+        AERRNO |= ANOTFOUND;
+        log_err ("error", "original node is NULL");
+        return NULL;
+    }
+
+    return hashNode->node;
+}
+
+
+static uint64_t bitPath (const TreeNode* start)
+{
+    assertStrict (TNverify (start) == OK, "node failed verification");
+    uint64_t bitVec64 = 0;
+
+    const TreeNode* node = start;
+    unsigned char      i = 0;
+    for (; node->parent != NULL; node = node->parent, i++) if (node->parent->right == node) bitVec64 |= 1ULL << i;
+    if (node->parent == NULL) bitVec64 |= 1ULL << i;
+
+    bitVec64 <<= __builtin_clzll (bitVec64);
+    return __builtin_bitreverse64 (bitVec64);
+}
+
+void printChDescr (const HashTR* hashTree, const char* character)
+{
+    assertStrict (TRverify (hashTree->tree, hashCMP)  == OK, "hash tree failed verification");
+    assertStrict (TRverify (hashTree->original, NULL) == OK, "original tree failed verification");
+
+    const TreeNode* node = searchHNtoTN (hashTree, character);
     if (node == NULL)
     {
-        AERRNO |= NULLRECIVED;
-        log_err ("error", "original node is NULL");
+        printf ("Not found\n");
         return;
     }
 
-
-    StackHandler stack = stackInit (hashTree->original->size * 3, sizeof (const char*));
-    for (const TreeNode* i = node; i->parent != NULL; i = i->parent)
+    uint64_t bitpath = bitPath (node);
+    
+    TreeNode* inode = hashTree->original->root;
+    for (size_t i = 1; inode && (inode->left || inode->right); i++)
     {
-        const char* buf = "v";
-        stackPush (stack, &buf);
+        printf ("%s?\n", (const char*)inode->data);
+        if ((bitpath >> i) & 1ULL)
+        {
+            printf ("| Да\nv\n");
 
-        buf = (i->parent == NULL || i->parent->right == i) ? "Да" : "Нет";
-        stackPush (stack, &buf);
-
-        buf = "|";
-        stackPush (stack, &buf);
-        
-        stackPush (stack, &i->parent->data);
+            inode = inode->right;
+        }
+        else
+        {
+            printf ("| Нет\nv\n");
+            
+            inode = inode->left;
+        }
     }
-    while (stackLen (stack) > 0)
-    {
-        const char* str = NULL;
-        stackPop (stack, &str);
-        printf ("%s\n", str);
-    }
-
-    stackFree (stack);
-
     printf ("%s\n", (const char*)node->data);
+}
+
+void cmpCh (const HashTR* hashTree, const char* chA, const char* chB)
+{
+    assertStrict (chA, "received NULL");
+    assertStrict (chB, "received NULL");
+
+    assertStrict (TRverify (hashTree->tree, hashCMP)  == OK, "hash tree failed verification");
+    assertStrict (TRverify (hashTree->original, NULL) == OK, "original tree failed verification");
+
+    const TreeNode* nodeA = searchHNtoTN (hashTree, chA);
+    if (nodeA == NULL)
+    {
+        printf ("Not found character A\n");
+        return;
+    }
+
+    const TreeNode* nodeB = searchHNtoTN (hashTree, chB);
+    if (nodeB == NULL)
+    {
+        printf ("Not found character B\n");
+        return;
+    }
+    uint64_t          bitpathA             = bitPath (nodeA);
+    uint64_t                      bitpathB = bitPath (nodeB);
+    uint64_t difpath = bitpathA ^ bitpathB;
+
+    TreeNode* inode = hashTree->original->root;
+    for (size_t i = 1; inode && (inode->left || inode->right); i++)
+    {   
+        if ((difpath >> i) & 1ULL)
+        {
+            printf ("Развилка здесь: \"%s?\"\n", (const char*)inode->data);
+            return;
+        }
+
+        inode = (bitpathA >> i) & 1ULL ? inode->right : inode->left;
+    }
+
+    AERRNO |= AUNKNOWN;
+    log_err ("unknown error", "something went wrong");
 }

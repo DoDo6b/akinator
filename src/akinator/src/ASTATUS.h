@@ -4,8 +4,9 @@
 
 enum
 {
-    AOK,
-    ANOTFOUND,
+    AOK         = 0,
+    ANOTFOUND   = 1,
+    AUNKNOWN    = 2,
 };
 
 
