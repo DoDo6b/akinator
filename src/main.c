@@ -29,6 +29,16 @@ int main (int argc, char** argv)
 
     HashTR* hashTree = hashTR (root);
 
+    size_t bufSiz = BUFSIZ;
+    char* buf = (char*)calloc (bufSiz, sizeof (char));
+    if (buf == NULL)
+    {
+        log_err ("allocation error", "something went wrong while allocating buffer");
+        HTRdel (hashTree);
+        TRdel (root);
+        return 1;
+    }
+
     bool DIRTY = 0;
     if (argc >= 4)
     {
@@ -42,26 +52,38 @@ int main (int argc, char** argv)
             }
             else if (strcmp (argv[arg], "-d") == 0) 
             {
-                char chname[BUFSIZ] = {0};
                 printf ("type name: ");
-                gets (chname);
+                ssize_t read = getline (&buf, &bufSiz, stdin);
+                if (read > 0) buf[read - 1] = '\0';
+
                 printf ("\n");
 
-                printChDescr (hashTree, chname);
+                printChDescr (hashTree, buf);
             }
             else if (strcmp (argv[arg], "-c") == 0)
             {
-                char chA[BUFSIZ] = {0};
                 printf ("type first name: ");
-                gets (chA);
+                ssize_t read = getline (&buf, &bufSiz, stdin);
+                if (read > 0) buf[read - 1] = '\0';
 
-                char chB[BUFSIZ] = {0};
+                char* chB = (char*)calloc (bufSiz, sizeof (char));
+                if (chB == NULL)
+                {
+                    log_err ("allocation error", "something went wrong while allocating buffer");
+                    HTRdel (hashTree);
+                    TRdel (root);
+                    return 1;
+                }
+
                 printf ("\ntype second name: ");
-                gets (chB);
+                read = getline (&chB, &bufSiz, stdin);
+                if (read > 0) chB[read - 1] = '\0';
 
                 printf ("\n");
 
-                cmpCh (hashTree, chA, chB);
+                cmpCh (hashTree, buf, chB);
+
+                free (chB);
             }
             else
             {
@@ -70,6 +92,8 @@ int main (int argc, char** argv)
             }
         }
     }
+
+    free (buf);
 
     HTRdel (hashTree);
 

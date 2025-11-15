@@ -33,8 +33,8 @@ void TRsavetof (const TreeRoot* root, const char* filename)
 
     TNsavetof (root->root, bufW);
 
-    fclose (stream);
     bufFree (bufW);
+    fclose (stream);
 
     log_string ("<grn>Tree saved to file: %s<dft>\n", filename);
 }
