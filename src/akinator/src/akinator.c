@@ -163,7 +163,7 @@ static uint64_t bitPath (const TreeNode* start)
     return __builtin_bitreverse64 (bitVec64);
 }
 
-void printChDescr (const HashTR* hashTree, const char* character)
+void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt)
 {
     assertStrict (TRverify (hashTree->tree, hashCMP)  == OK, "hash tree failed verification");
     assertStrict (TRverify (hashTree->original, NULL) == OK, "original tree failed verification");
@@ -177,8 +177,8 @@ void printChDescr (const HashTR* hashTree, const char* character)
 
     uint64_t bitpath = bitPath (node);
     
-    TreeNode* inode = hashTree->original->root;
-    for (size_t i = 1; inode && (inode->left || inode->right); i++)
+    TreeNode* inode = start ? start : hashTree->original->root;
+    for (size_t i = start ? startIt : 1; inode && (inode->left || inode->right); i++)
     {
         printf ("%s?\n", (const char*)inode->data);
         if ((bitpath >> i) & 1ULL)
@@ -218,7 +218,7 @@ void cmpCh (const HashTR* hashTree, const char* chA, const char* chB)
         printf ("Not found character B\n");
         return;
     }
-    uint64_t          bitpathA             = bitPath (nodeA);
+    uint64_t           bitpathA            = bitPath (nodeA);
     uint64_t                      bitpathB = bitPath (nodeB);
     uint64_t difpath = bitpathA ^ bitpathB;
 
@@ -228,10 +228,28 @@ void cmpCh (const HashTR* hashTree, const char* chA, const char* chB)
         if ((difpath >> i) & 1ULL)
         {
             printf ("Развилка здесь: \"%s?\"\n", (const char*)inode->data);
+            
+            printf ("\nПерсонаж А:\n");
+            printChDescr (hashTree, chA, inode, i);
+            printf ("\nПерсонаж Б:\n");
+            printChDescr (hashTree, chB, inode, i);
             return;
         }
 
-        inode = (bitpathA >> i) & 1ULL ? inode->right : inode->left;
+        printf ("%s?\n", (const char*)inode->data);
+
+        if ((bitpathA >> i) & 1ULL)
+        {
+            printf ("| Да\nv\n");
+
+            inode = inode->right;
+        }
+        else
+        {
+            printf ("| Нет\nv\n");
+            
+            inode = inode->left;
+        }
     }
 
     AERRNO |= AUNKNOWN;

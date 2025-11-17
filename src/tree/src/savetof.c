@@ -58,6 +58,11 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
     long len = stop - bufR->bufpos;
     if (stop == NULL || len == 0) return NULL;
 
+    if (strstr (bufR->bufpos, "не") || strstr (bufR->bufpos, "Не"))
+    {
+        log_war ("warning", "negative question");
+    }
+
     TreeNode* node = TNinit (bufR->bufpos, (size_t)len);
     bufSeek (bufR, len, SEEK_CUR);
 

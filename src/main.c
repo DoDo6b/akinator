@@ -58,7 +58,7 @@ int main (int argc, char** argv)
 
                 printf ("\n");
 
-                printChDescr (hashTree, buf);
+                printChDescr (hashTree, buf, NULL, 1);
             }
             else if (strcmp (argv[arg], "-c") == 0)
             {

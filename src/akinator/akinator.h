@@ -10,7 +10,7 @@ typedef EC_t ASTATUS;
 
 ASTATUS play (HashTR* dbroot);
 
-void printChDescr (const HashTR* hashTree, const char* character);
+void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt);
 void cmpCh        (const HashTR* hashTree, const char* chA, const char* chB);
 
 
