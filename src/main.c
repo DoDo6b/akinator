@@ -38,15 +38,17 @@ int main (int argc, char** argv)
         TRdel (root);
         return 1;
     }
+    
+    bool tts = argc >= 4 && strcmp (argv[3], "--tts") == 0;
 
     bool DIRTY = 0;
-    if (argc >= 4)
+    if ((argc >= 4 && tts == false) || argc >= 5)
     {
-        for (int arg = 3; arg < argc; arg++)
+        for (int arg = tts ? 4 : 3; arg < argc; arg++)
         {
             if (strcmp (argv[arg], "-p") == 0)
             {
-                play (hashTree);
+                play (hashTree, tts);
                 
                 DIRTY = true;
             }
@@ -58,7 +60,7 @@ int main (int argc, char** argv)
 
                 printf ("\n");
 
-                printChDescr (hashTree, buf, NULL, 1);
+                printChDescr (hashTree, buf, NULL, 1, tts);
             }
             else if (strcmp (argv[arg], "-c") == 0)
             {
@@ -81,7 +83,7 @@ int main (int argc, char** argv)
 
                 printf ("\n");
 
-                cmpCh (hashTree, buf, chB);
+                cmpCh (hashTree, buf, chB, tts);
 
                 free (chB);
             }

@@ -46,17 +46,24 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
     assertStrict (counter, "received NULL");
     assertStrict (bufVerify (bufR, 0) == BUFOK && bufR->mode == BUFREAD, "buffer failed verification");
     
+    if (TERRNO & PARSING) return NULL;
 
-    if (bufpeekc (bufR) == '{') bufSeek (bufR, 1, SEEK_CUR);
-    if (bufpeekc (bufR) == '}')
+    if (bufpeekc (bufR) == '{')
     {
-        bufSeek (bufR, 1, SEEK_CUR);
+        log_err ("parsing error", "label expected (%lu)", bufTell (bufR));
+        TERRNO |= PARSING;
         return NULL;
     }
+    if (bufpeekc (bufR) == '}') return NULL;
 
     char*      stop = strchr (bufR->bufpos, '{');
     long len = stop - bufR->bufpos;
-    if (stop == NULL || len == 0) return NULL;
+    if (stop == NULL || len == 0)
+    {
+        log_err ("parsing error", "{ expected (%ld)", bufTell (bufR));
+        TERRNO |= PARSING;
+        return NULL;
+    }
 
     if (strstr (bufR->bufpos, "не") || strstr (bufR->bufpos, "Не"))
     {
@@ -64,10 +71,37 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
     }
 
     TreeNode* node = TNinit (bufR->bufpos, (size_t)len);
-    bufSeek (bufR, len, SEEK_CUR);
+    bufSeek (bufR, len + 1, SEEK_CUR);
+
 
     node->left  = TNloadf (bufR, counter);
+    if (TERRNO & PARSING) return node;
+
+    if (bufGetc (bufR) != '}')
+    {
+        log_err ("parsing error", "} expected (%ld)", bufTell (bufR));
+
+        TERRNO |= PARSING;
+        return node;
+    }
+
+    if (bufGetc (bufR) != '{')
+    {
+        log_err ("parsing error", "{ expected (%ld)", bufR->name, bufTell (bufR));
+
+        TERRNO |= PARSING;
+        return node;
+    }
     node->right = TNloadf (bufR, counter);
+    if (TERRNO & PARSING) return node;
+
+    if (bufGetc (bufR) != '}')
+    {
+        log_err ("parsing error", "} expected (%ld)", bufTell (bufR));
+
+        TERRNO |= PARSING;
+        return node;
+    }
 
     if (node->left)
     {
@@ -79,8 +113,6 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
         node->right->parent = node;
         *counter += 1;
     }
-
-    if (bufpeekc (bufR) == '}') bufSeek (bufR, 1, SEEK_CUR);
 
     assertStrict (TNverify (node) == OK, "node failed verification");
 
@@ -102,6 +134,13 @@ TreeRoot* TRloadf (const char* filename)
 
     fclose (bufR->stream);
     bufFree (bufR);
+
+    if (TERRNO & PARSING)
+    {
+        TRdel (root);
+        root = NULL;
+        log_err ("parsing error", "tree wasnt loaded propperly, calling TRdel()");
+    }
 
     assertStrict (TRverify (root, NULL) == OK, "tree failed verification");
 

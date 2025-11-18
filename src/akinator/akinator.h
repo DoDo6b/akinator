@@ -8,10 +8,10 @@
 
 typedef EC_t ASTATUS;
 
-ASTATUS play (HashTR* dbroot);
+ASTATUS play (HashTR* dbroot, bool tts);
 
-void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt);
-void cmpCh        (const HashTR* hashTree, const char* chA, const char* chB);
+void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt, bool tts);
+void cmpCh        (const HashTR* hashTree, const char* chA, const char* chB,                       bool tts);
 
 
 #endif

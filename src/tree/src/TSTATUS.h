@@ -9,12 +9,13 @@ enum
     BADALLOC        = 2,
     DEPMODULE       = 4,
     
-    DUPLSYMB        = 8,
-    UNKERR          = 16,
+    PARSING         = 8,
+    DUPLSYMB        = 16,
+    UNKERR          = 32,
 
-    DATABUFNINIT    = 32,
-    UNSORTED        = 64,
-    ROOTSTATCOR     = 128,
+    DATABUFNINIT    = 64,
+    UNSORTED        = 128,
+    ROOTSTATCOR     = 256,
 };
 
 

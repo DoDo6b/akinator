@@ -25,6 +25,8 @@ TSTATUS TRverify (const TreeRoot* root, int (*dataCmp)(const void*, const void*)
     {
         TERRNO |= NULLRECIVED;
         log_err ("verification error", "root failed verification");
+        
+        return TERRNO;
     }
 
     size_t realSiz   = 0;

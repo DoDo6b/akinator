@@ -5,9 +5,17 @@
 
 ASTATUS AERRNO = AOK;
 
-static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree);
 
-ASTATUS play (HashTR* hashTree)
+static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree, bool tts, char* ttsBuf);
+
+#define SAYTTS(str, ...) \
+    if (tts) \
+    { \
+        sprintf (ttsBuf, "say -v Milena \"" str "\"",  ##__VA_ARGS__); \
+        system (ttsBuf); \
+    }
+
+ASTATUS play (HashTR* hashTree, bool tts)
 {
     setlocale(LC_ALL, "");
 
@@ -17,16 +25,27 @@ ASTATUS play (HashTR* hashTree)
         return AERRNO;
     }
 
+    char* ttsBuf = tts ? (char*)calloc (BUFSIZ, sizeof (char)) : NULL;
+    if (tts && ttsBuf == NULL)
+    {
+        AERRNO |= BADALLOC;
+        log_err ("allocation error", "cant allocate tts buffer");
+        tts = false;
+    }
+
     for (TreeNode* questionNode = hashTree->original->root, *parent = NULL; questionNode;)
     {
         printf ("%s?\n", (const char*)questionNode->data);
+        SAYTTS ("%s?",   (const char*)questionNode->data)
 
         wchar_t       userans = 0;
         scanf ("%lc", &userans);
+        if (userans == '\n') scanf ("%lc", &userans);
         
         while (userans != L'д' && userans != L'н')
         {
             printf ("разрешенные ответы: д/н\n");
+            SAYTTS ("разрешенные ответы: дэ или эн")
             scanf ("%lc", &userans);
         }
 
@@ -36,13 +55,17 @@ ASTATUS play (HashTR* hashTree)
 
         if (questionNode == NULL)
         {
-            if (userans == L'д') printf ("GGs\n");
+            if (userans == L'д')
+            {
+                printf ("GGs\n");
+                SAYTTS ("Я знаю всё")
+            }
             else
             {
-                addNewCh (parent, hashTree);
-                if (AERRNO != OK) return AERRNO;
+                addNewCh (parent, hashTree, tts, ttsBuf);
             }
 
+            if (tts) free (ttsBuf);
             return AERRNO;
         }
     }
@@ -59,7 +82,7 @@ ASTATUS play (HashTR* hashTree)
 }
 
 
-static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
+static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree, bool tts, char* ttsBuf)
 {
     parent->left = TNinit (parent->data, parent->size);
     if (parent->left == NULL)
@@ -85,6 +108,7 @@ static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
     while ((c = getchar()) != '\n' && c != EOF) {}
 
     printf ("Кто это?\n");
+    SAYTTS ("Кто это?")
     getline (&buf, &bufSiz, stdin);
     buf[strcspn(buf, "\n")] = '\0';
 
@@ -101,6 +125,7 @@ static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
 
 
     printf ("Чем оно/он/она отличается от %s? Продолжите: Он/оно/она ...\n", (const char*)parent->data);
+    SAYTTS ("Чем оно/он/она отличается от %s? Продолжите: Он/оно/она ...",   (const char*)parent->data)
     getline (&buf, &bufSiz, stdin);
     buf[strcspn(buf, "\n")] = '\0';
 
@@ -120,6 +145,8 @@ static ASTATUS addNewCh (TreeNode* parent, HashTR* hashTree)
     parent->size = bufLen;
 
     free (buf);
+
+    SAYTTS ("Теперь я знаю больше")
 
     return AERRNO;
 }
@@ -163,7 +190,7 @@ static uint64_t bitPath (const TreeNode* start)
     return __builtin_bitreverse64 (bitVec64);
 }
 
-void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt)
+void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt, bool tts)
 {
     assertStrict (TRverify (hashTree->tree, hashCMP)  == OK, "hash tree failed verification");
     assertStrict (TRverify (hashTree->original, NULL) == OK, "original tree failed verification");
@@ -176,28 +203,40 @@ void printChDescr (const HashTR* hashTree, const char* character, TreeNode* star
     }
 
     uint64_t bitpath = bitPath (node);
+
+    char* ttsBuf = tts ? (char*)calloc (BUFSIZ, sizeof (char)) : NULL;
+    if (tts && ttsBuf == NULL)
+    {
+        AERRNO |= BADALLOC;
+        log_err ("allocation error", "cant allocate tts buffer");
+        tts = false;
+    }
     
     TreeNode* inode = start ? start : hashTree->original->root;
+    printf ("%s:\n", character);
+    SAYTTS ("%s:",   character)
     for (size_t i = start ? startIt : 1; inode && (inode->left || inode->right); i++)
     {
-        printf ("%s?\n", (const char*)inode->data);
+
         if ((bitpath >> i) & 1ULL)
         {
-            printf ("| Да\nv\n");
-
             inode = inode->right;
         }
         else
         {
-            printf ("| Нет\nv\n");
-            
+            printf ("не ");
+            SAYTTS ("не ")
+
             inode = inode->left;
         }
+        printf ("%s\n", (const char*)inode->parent->data);
+        SAYTTS ("%s",   (const char*)inode->parent->data);
     }
-    printf ("%s\n", (const char*)node->data);
+
+    free (ttsBuf);
 }
 
-void cmpCh (const HashTR* hashTree, const char* chA, const char* chB)
+void cmpCh (const HashTR* hashTree, const char* chA, const char* chB, bool tts)
 {
     assertStrict (chA, "received NULL");
     assertStrict (chB, "received NULL");
@@ -222,34 +261,43 @@ void cmpCh (const HashTR* hashTree, const char* chA, const char* chB)
     uint64_t                      bitpathB = bitPath (nodeB);
     uint64_t difpath = bitpathA ^ bitpathB;
 
+    char* ttsBuf = tts ? (char*)calloc (BUFSIZ, sizeof (char)) : NULL;
+    if (tts && ttsBuf == NULL)
+    {
+        AERRNO |= BADALLOC;
+        log_err ("allocation error", "cant allocate tts buffer");
+        tts = false;
+    }
+
     TreeNode* inode = hashTree->original->root;
     for (size_t i = 1; inode && (inode->left || inode->right); i++)
     {   
         if ((difpath >> i) & 1ULL)
         {
-            printf ("Развилка здесь: \"%s?\"\n", (const char*)inode->data);
+            printf ("отличия: \"%s?\"\n", (const char*)inode->data);
+            SAYTTS ("отличия: \"%s?\"",   (const char*)inode->data)
             
-            printf ("\nПерсонаж А:\n");
-            printChDescr (hashTree, chA, inode, i);
-            printf ("\nПерсонаж Б:\n");
-            printChDescr (hashTree, chB, inode, i);
+            printChDescr (hashTree, chA, inode, i, tts);
+            printChDescr (hashTree, chB, inode, i, tts);
             return;
         }
 
-        printf ("%s?\n", (const char*)inode->data);
+        printf ("Общие качества:\n");
+        SAYTTS ("Общие качества:");
 
         if ((bitpathA >> i) & 1ULL)
         {
-            printf ("| Да\nv\n");
-
             inode = inode->right;
         }
         else
         {
-            printf ("| Нет\nv\n");
-            
+            printf ("не ");
+            SAYTTS ("не ")
+
             inode = inode->left;
         }
+        printf ("%s\n", (const char*)inode->parent->data);
+        SAYTTS ("%s",   (const char*)inode->parent->data);
     }
 
     AERRNO |= AUNKNOWN;
