@@ -2,13 +2,10 @@
 #include "tree/tree.h"
 #include "akinator/akinator.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-static void printStr (const void* src, size_t size)
+static void printStr (const void* src, size_t /*size*/)
 {
     log_string ("data:          %s\n", (const char*)src);
 }
-#pragma GCC diagnostic pop
 
 #define TNdumpStr(node)  TNdump_ (       node, printStr, 0, PRE)
 #define TRdumpStr(root)  TRdump_ (#root, root, printStr,    PRE)
@@ -39,7 +36,7 @@ int main (int argc, char** argv)
         return 1;
     }
     
-    bool tts = argc >= 4 && strcmp (argv[3], "--tts") == 0;
+    bool tts = argc >= 4 && strcmp (argv[3], "--tts") == 0 ;//&& __DARWIN_VERSION__;
 
     bool DIRTY = 0;
     if ((argc >= 4 && tts == false) || argc >= 5)
