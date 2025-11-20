@@ -38,7 +38,7 @@ ASTATUS play (HashTR* hashTree, bool tts)
         printf ("%s?\n", (const char*)questionNode->data);
         SAYTTS ("%s?",   (const char*)questionNode->data)
 
-        wchar_t       userans = 0;
+        wchar_t        userans = 0;
         scanf ("%lc", &userans);
         if (userans == '\n') scanf ("%lc", &userans);
         
@@ -186,8 +186,8 @@ static uint64_t bitPath (const TreeNode* start)
     for (; node->parent != NULL; node = node->parent, i++) if (node->parent->right == node) bitVec64 |= 1ULL << i;
     if (node->parent == NULL) bitVec64 |= 1ULL << i;
 
-    bitVec64 <<= __builtin_clzll (bitVec64);
-    return __builtin_bitreverse64 (bitVec64);
+    bitVec64 <<= __builtin_clzll        (bitVec64);
+    return       __builtin_bitreverse64 (bitVec64);
 }
 
 void printChDescr (const HashTR* hashTree, const char* character, TreeNode* start, size_t startIt, bool tts)
