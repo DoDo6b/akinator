@@ -54,7 +54,6 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
         TERRNO |= PARSING;
         return NULL;
     }
-    if (bufpeekc (bufR) == '}') return NULL;
 
     char*      stop = strchr (bufR->bufpos, '{');
     long len = stop - bufR->bufpos;
@@ -73,8 +72,7 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
     TreeNode* node = TNinit (bufR->bufpos, (size_t)len);
     bufSeek (bufR, len + 1, SEEK_CUR);
 
-
-    node->left  = TNloadf (bufR, counter);
+    node->left  = bufpeekc (bufR) == '}' ? NULL : TNloadf (bufR, counter);
     if (TERRNO & PARSING) return node;
 
     if (bufGetc (bufR) != '}')
@@ -92,7 +90,7 @@ static TreeNode* TNloadf (Buffer* bufR, size_t* counter)
         TERRNO |= PARSING;
         return node;
     }
-    node->right = TNloadf (bufR, counter);
+    node->right  = bufpeekc (bufR) == '}' ? NULL : TNloadf (bufR, counter);
     if (TERRNO & PARSING) return node;
 
     if (bufGetc (bufR) != '}')
